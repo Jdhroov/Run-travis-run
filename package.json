@@ -24,7 +24,7 @@
   "homepage": "https://github.com/Jdhroov/Run-travis-run#readme",
   "type": "module",
   "browserslist": "defaults",
-  "sideEffects": "false",
+  "sideEffects": false,
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
