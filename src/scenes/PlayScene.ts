@@ -21,8 +21,6 @@ export class PlayScene extends Phaser.Scene {
   private catalog!: AssetCatalog
   private static readonly OBSTACLE_W = 48
   private static readonly OBSTACLE_H = 48
-  private obstacles!: Phaser.Physics.Arcade.Group
-  private obstaclePassedCount = 0
   private bgMusic!: Phaser.Sound.BaseSound
 
   constructor() { super('PlayScene') }
@@ -36,11 +34,13 @@ export class PlayScene extends Phaser.Scene {
     this.load.image('donald', '/assets/donald/donald.png')
     // auto-load all exes images
     this.catalog = loadAssets(this)
+    
+    // Load background music from BGM folder
+    this.load.audio('bgMusic', '/assets/BGM/y2mate.com - Taylor Swift  Paper Rings Official Audio.mp3')
     this.load.audio('jump', '/assets/audio/jump.mp3')
     this.load.audio('duck', '/assets/audio/duck.mp3')
     this.load.audio('hit', '/assets/audio/hit.mp3')
     this.load.audio('win', '/assets/audio/win.mp3')
-    this.load.audio('bgMusic', '/assets/audio/bg_music.mp3')
   }
 
   create() {
@@ -53,7 +53,6 @@ export class PlayScene extends Phaser.Scene {
     this.speed = 300
     this.obstacleTimer = 0
     this.result = 'playing'
-    this.obstaclePassedCount = 0
 
     // Generate placeholder textures in tests/dev if not present
     const makeRect = (key: string, w: number, h: number, color = 0xffffff) => {
@@ -77,6 +76,14 @@ export class PlayScene extends Phaser.Scene {
     this.sound.play = ((key: string) => {
       try { return originalPlay(key) } catch { return null as unknown as Phaser.Sound.BaseSound }
     }) as typeof this.sound.play
+
+    // Play background music
+    try {
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 } as any)
+      this.bgMusic.play()
+    } catch (error) {
+      console.log('Background music not available')
+    }
 
     // static background image (stadium)
     if (this.textures.exists('bg')) {
@@ -112,10 +119,6 @@ export class PlayScene extends Phaser.Scene {
     )
     this.physics.add.collider(this.player, ground)
 
-    // Group for all obstacles with reliable collision detection
-    this.obstacles = this.physics.add.group()
-    this.physics.add.collider(this.player, this.obstacles, () => this.lose(), undefined, this)
-
     this.cursors = this.input.keyboard!.createCursorKeys()
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -143,27 +146,6 @@ export class PlayScene extends Phaser.Scene {
       this.timerText.setText(String(this.timeLeft))
       if (this.timeLeft <= 0) this.win()
     }})
-
-    // Spawn first obstacle after 1 second
-    this.time.delayedCall(1000, () => {
-      if (this.result === 'playing') this.spawnObstacle()
-    })
-
-    // Spawn obstacles immediately and frequently
-    this.time.delayedCall(500, () => {
-      if (this.result === 'playing') {
-        this.spawnObstacle()
-        this.spawnObstacle()
-      }
-    })
-
-    // Play background music
-    try {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 } as any)
-      this.bgMusic.play()
-    } catch (error) {
-      console.log('Background music not available')
-    }
   }
 
   private triggerJump() {
@@ -201,19 +183,18 @@ export class PlayScene extends Phaser.Scene {
     // Fixed distribution: 65% ground, 35% air
     const spawnAir = Math.random() < 0.35
 
-    // Always use fallback 'ex' texture for guaranteed visibility
-    const exKey = 'ex'
-    
-    // Create obstacle with forced visibility
-    const ex = this.physics.add.sprite(width + 50, height / 2, exKey)
+    // Pick a random ex texture from catalog; fallback to placeholder
+    const exKey = (this.catalog?.exes?.length ?? 0) > 0
+      ? this.catalog.exes[Math.floor(Math.random() * this.catalog.exes.length)]
+      : 'ex'
+    // Uniform obstacle size
+    const ex = this.physics.add.sprite(width + 20, height / 2, exKey)
     ex.setDisplaySize(PlayScene.OBSTACLE_W, PlayScene.OBSTACLE_H)
-    ex.setDepth(10).setVisible(true).setActive(true)
-    ex.setTint(0xff0000) // Force red tint to make it visible
 
     // Positioning
     if (spawnAir) {
-      // Air obstacle positioned to collide with player head unless ducking
-      const airY = this.player.y - this.player.displayHeight * 0.4
+      // Air obstacle at head-height
+      const airY = height - 120
       ex.setY(airY)
     } else {
       // Ground obstacle sits on turf: jump to avoid
@@ -229,11 +210,7 @@ export class PlayScene extends Phaser.Scene {
     ;(ex.body as Phaser.Physics.Arcade.Body).immovable = true
     ;(ex.body as Phaser.Physics.Arcade.Body).setSize(PlayScene.OBSTACLE_W, PlayScene.OBSTACLE_H, true)
 
-    // Add to group for reliable collision detection
-    this.obstacles.add(ex)
-    ;(ex as any).passed = false
-    
-    console.log('Obstacle spawned at:', ex.x, ex.y, 'with key:', exKey)
+    this.physics.add.overlap(this.player, ex, () => this.lose(), undefined, this)
   }
 
   private increaseDifficulty(delta: number) {
@@ -246,13 +223,15 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private addScore(delta: number) {
-    // Score is now handled by obstacle passing, not time-based
-    // Keep this for any additional scoring mechanics
+    this.score += Math.floor(delta * 0.05)
+    this.scoreText.setText(`Score: ${this.score}`)
   }
 
   private win() {
     if (this.result !== 'playing') return
     this.result = 'win'
+    // Stop background music
+    if (this.bgMusic) this.bgMusic.stop()
     this.sound.play('win')
     this.scene.start('GameOverScene', { result: 'win', score: this.score })
   }
@@ -260,6 +239,8 @@ export class PlayScene extends Phaser.Scene {
   private lose() {
     if (this.result !== 'playing') return
     this.result = 'lose'
+    // Stop background music
+    if (this.bgMusic) this.bgMusic.stop()
     this.sound.play('hit')
     this.scene.start('GameOverScene', { result: 'lose', score: this.score })
   }
@@ -278,26 +259,5 @@ export class PlayScene extends Phaser.Scene {
     if (this.bgFar) this.bgFar.tilePositionX += this.speed * 0.0008 * delta
     if (this.bgNear) this.bgNear.tilePositionX += this.speed * 0.0012 * delta
     if (this.groundScroll) this.groundScroll.tilePositionX += this.speed * 0.002 * delta
-
-    // Check for passed obstacles and cleanup
-    if (this.obstacles) {
-      this.obstacles.children.each((child: Phaser.GameObjects.GameObject) => {
-        const obstacle = child as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { passed?: boolean }
-        if (!obstacle.active) return
-        
-        // Award score when obstacle passes player completely
-        if (!obstacle.passed && obstacle.x + obstacle.displayWidth * 0.5 < this.player.x - 50) {
-          obstacle.passed = true
-          this.obstaclePassedCount++
-          this.score = this.obstaclePassedCount
-          this.scoreText.setText(`Score: ${this.score}`)
-        }
-        
-        // Remove off-screen obstacles
-        if (obstacle.x < -obstacle.displayWidth - 100) {
-          obstacle.destroy()
-        }
-      }, this)
-    }
   }
 }

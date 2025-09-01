@@ -7,13 +7,11 @@ export type AssetCatalog = {
 export function loadAssets(scene: Phaser.Scene): AssetCatalog {
   const exesModules = import.meta.glob('/assets/exes/*.{png,jpg,jpeg,gif}', {
     eager: true,
-    query: '?url',
-    import: 'default'
+    as: 'url'
   }) as Record<string, string>
   const travisModules = import.meta.glob('/assets/travis/*.{png,jpg,jpeg,gif}', {
     eager: true,
-    query: '?url',
-    import: 'default'
+    as: 'url'
   }) as Record<string, string>
 
   const exesKeys: string[] = []
