@@ -201,14 +201,14 @@ export class PlayScene extends Phaser.Scene {
     // Fixed distribution: 65% ground, 35% air
     const spawnAir = Math.random() < 0.35
 
-    // Pick a random ex texture from catalog; fallback to placeholder
-    const exKey = (this.catalog?.exes?.length ?? 0) > 0
-      ? this.catalog.exes[Math.floor(Math.random() * this.catalog.exes.length)]
-      : 'ex'
-    // Uniform obstacle size
-    const ex = this.physics.add.sprite(width + 20, height / 2, exKey)
+    // Always use fallback 'ex' texture for guaranteed visibility
+    const exKey = 'ex'
+    
+    // Create obstacle with forced visibility
+    const ex = this.physics.add.sprite(width + 50, height / 2, exKey)
     ex.setDisplaySize(PlayScene.OBSTACLE_W, PlayScene.OBSTACLE_H)
-    ex.setDepth(2).setVisible(true)
+    ex.setDepth(10).setVisible(true).setActive(true)
+    ex.setTint(0xff0000) // Force red tint to make it visible
 
     // Positioning
     if (spawnAir) {
@@ -232,6 +232,8 @@ export class PlayScene extends Phaser.Scene {
     // Add to group for reliable collision detection
     this.obstacles.add(ex)
     ;(ex as any).passed = false
+    
+    console.log('Obstacle spawned at:', ex.x, ex.y, 'with key:', exKey)
   }
 
   private increaseDifficulty(delta: number) {
