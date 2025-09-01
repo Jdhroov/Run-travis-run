@@ -149,6 +149,14 @@ export class PlayScene extends Phaser.Scene {
       if (this.result === 'playing') this.spawnObstacle()
     })
 
+    // Spawn obstacles immediately and frequently
+    this.time.delayedCall(500, () => {
+      if (this.result === 'playing') {
+        this.spawnObstacle()
+        this.spawnObstacle()
+      }
+    })
+
     // Play background music
     try {
       this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 } as any)
