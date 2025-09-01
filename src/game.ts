@@ -12,7 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
   backgroundColor: '#0b6623',
   physics: {
     default: 'arcade',
-    arcade: { gravity: { y: 1400 }, debug: false }
+    arcade: { gravity: { x: 0, y: 1400 }, debug: false }
   },
   scale: { mode: Phaser.Scale.ENVELOP, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: [MenuScene, PlayScene, GameOverScene, LeaderboardScene]

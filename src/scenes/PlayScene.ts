@@ -26,21 +26,17 @@ export class PlayScene extends Phaser.Scene {
   constructor() { super('PlayScene') }
 
   preload() {
-    // Minimal placeholder assets
+    // Load only assets that actually exist
     this.load.image('bg', '/assets/background/stadium.jpg')
-    this.load.image('player', '/assets/travis/placeholder_player.png')
-    this.load.image('ground', '/assets/background/ground.png')
-    this.load.image('taylor', '/assets/taylor/taylor.png')
+    this.load.image('player', '/assets/travis/travis.jpeg')
+    this.load.image('taylor', '/assets/taylor/taylor.jpeg')
     this.load.image('donald', '/assets/donald/donald.png')
     // auto-load all exes images
     this.catalog = loadAssets(this)
     
     // Load background music from BGM folder
     this.load.audio('bgMusic', '/assets/BGM/y2mate.com - Taylor Swift  Paper Rings Official Audio.mp3')
-    this.load.audio('jump', '/assets/audio/jump.mp3')
-    this.load.audio('duck', '/assets/audio/duck.mp3')
-    this.load.audio('hit', '/assets/audio/hit.mp3')
-    this.load.audio('win', '/assets/audio/win.mp3')
+    // Audio files don't exist, so we'll skip them
   }
 
   create() {
@@ -57,7 +53,7 @@ export class PlayScene extends Phaser.Scene {
     // Generate placeholder textures in tests/dev if not present
     const makeRect = (key: string, w: number, h: number, color = 0xffffff) => {
       if (this.textures.exists(key)) return
-      const g = this.make.graphics({ x: 0, y: 0, add: false })
+      const g = this.make.graphics({ x: 0, y: 0 })
       g.fillStyle(color, 1)
       g.fillRect(0, 0, w, h)
       g.generateTexture(key, w, h)
@@ -150,13 +146,13 @@ export class PlayScene extends Phaser.Scene {
 
   private triggerJump() {
     if (!this.player.body.blocked.down || this.isDucking || this.result !== 'playing') return
-    this.sound.play('jump')
+    try { this.sound.play('jump') } catch {}
     this.player.setVelocityY(-600)
   }
 
   private startDuck() {
     if (!this.player.body.blocked.down || this.result !== 'playing') return
-    this.sound.play('duck')
+    try { this.sound.play('duck') } catch {}
     this.isDucking = true
     this.player.setScale(1, 0.6)
     // Shrink physics body to match ducked sprite
@@ -232,7 +228,7 @@ export class PlayScene extends Phaser.Scene {
     this.result = 'win'
     // Stop background music
     if (this.bgMusic) this.bgMusic.stop()
-    this.sound.play('win')
+    try { this.sound.play('win') } catch {}
     this.scene.start('GameOverScene', { result: 'win', score: this.score })
   }
 
@@ -241,11 +237,11 @@ export class PlayScene extends Phaser.Scene {
     this.result = 'lose'
     // Stop background music
     if (this.bgMusic) this.bgMusic.stop()
-    this.sound.play('hit')
+    try { this.sound.play('hit') } catch {}
     this.scene.start('GameOverScene', { result: 'lose', score: this.score })
   }
 
-  update(_, delta: number) {
+  update(_: number, delta: number) {
     if (this.result !== 'playing') return
 
     if (this.cursors.space?.isDown) this.triggerJump()
