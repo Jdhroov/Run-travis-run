@@ -21,7 +21,8 @@ export class PlayScene extends Phaser.Scene {
   private catalog!: AssetCatalog
   private static readonly OBSTACLE_W = 48
   private static readonly OBSTACLE_H = 48
-  // obstacles managed individually per spawn
+  private obstacles!: Phaser.Physics.Arcade.Group
+  private obstaclePassedCount = 0
 
   constructor() { super('PlayScene') }
 
@@ -50,6 +51,7 @@ export class PlayScene extends Phaser.Scene {
     this.speed = 300
     this.obstacleTimer = 0
     this.result = 'playing'
+    this.obstaclePassedCount = 0
 
     // Generate placeholder textures in tests/dev if not present
     const makeRect = (key: string, w: number, h: number, color = 0xffffff) => {
@@ -108,9 +110,9 @@ export class PlayScene extends Phaser.Scene {
     )
     this.physics.add.collider(this.player, ground)
 
-    // per-obstacle collider/overlap will be added on spawn
-
-    // obstacles are spawned on demand
+    // Group for all obstacles with reliable collision detection
+    this.obstacles = this.physics.add.group()
+    this.physics.add.collider(this.player, this.obstacles, () => this.lose(), undefined, this)
 
     this.cursors = this.input.keyboard!.createCursorKeys()
 
@@ -183,11 +185,12 @@ export class PlayScene extends Phaser.Scene {
     // Uniform obstacle size
     const ex = this.physics.add.sprite(width + 20, height / 2, exKey)
     ex.setDisplaySize(PlayScene.OBSTACLE_W, PlayScene.OBSTACLE_H)
+    ex.setDepth(2).setVisible(true)
 
     // Positioning
     if (spawnAir) {
-      // Air obstacle at head-height
-      const airY = height - 120
+      // Air obstacle positioned to collide with player head unless ducking
+      const airY = this.player.y - this.player.displayHeight * 0.4
       ex.setY(airY)
     } else {
       // Ground obstacle sits on turf: jump to avoid
@@ -203,8 +206,9 @@ export class PlayScene extends Phaser.Scene {
     ;(ex.body as Phaser.Physics.Arcade.Body).immovable = true
     ;(ex.body as Phaser.Physics.Arcade.Body).setSize(PlayScene.OBSTACLE_W, PlayScene.OBSTACLE_H, true)
 
-    // Use collider to ensure contact triggers lose
-    this.physics.add.collider(this.player, ex, () => this.lose(), undefined, this)
+    // Add to group for reliable collision detection
+    this.obstacles.add(ex)
+    ;(ex as any).passed = false
   }
 
   private increaseDifficulty(delta: number) {
@@ -217,8 +221,8 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private addScore(delta: number) {
-    this.score += Math.floor(delta * 0.05)
-    this.scoreText.setText(`Score: ${this.score}`)
+    // Score is now handled by obstacle passing, not time-based
+    // Keep this for any additional scoring mechanics
   }
 
   private win() {
@@ -250,6 +254,25 @@ export class PlayScene extends Phaser.Scene {
     if (this.bgNear) this.bgNear.tilePositionX += this.speed * 0.0012 * delta
     if (this.groundScroll) this.groundScroll.tilePositionX += this.speed * 0.002 * delta
 
-    // no per-frame obstacle scoring/cleanup
+    // Check for passed obstacles and cleanup
+    if (this.obstacles) {
+      this.obstacles.children.each((child: Phaser.GameObjects.GameObject) => {
+        const obstacle = child as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { passed?: boolean }
+        if (!obstacle.active) return
+        
+        // Award score when obstacle passes player completely
+        if (!obstacle.passed && obstacle.x + obstacle.displayWidth * 0.5 < this.player.x - 50) {
+          obstacle.passed = true
+          this.obstaclePassedCount++
+          this.score = this.obstaclePassedCount
+          this.scoreText.setText(`Score: ${this.score}`)
+        }
+        
+        // Remove off-screen obstacles
+        if (obstacle.x < -obstacle.displayWidth - 100) {
+          obstacle.destroy()
+        }
+      }, this)
+    }
   }
 }
