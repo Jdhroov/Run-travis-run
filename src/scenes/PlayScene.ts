@@ -23,6 +23,7 @@ export class PlayScene extends Phaser.Scene {
   private static readonly OBSTACLE_H = 48
   private obstacles!: Phaser.Physics.Arcade.Group
   private obstaclePassedCount = 0
+  private bgMusic!: Phaser.Sound.BaseSound
 
   constructor() { super('PlayScene') }
 
@@ -39,6 +40,7 @@ export class PlayScene extends Phaser.Scene {
     this.load.audio('duck', '/assets/audio/duck.mp3')
     this.load.audio('hit', '/assets/audio/hit.mp3')
     this.load.audio('win', '/assets/audio/win.mp3')
+    this.load.audio('bgMusic', '/assets/audio/bg_music.mp3')
   }
 
   create() {
@@ -141,6 +143,14 @@ export class PlayScene extends Phaser.Scene {
       this.timerText.setText(String(this.timeLeft))
       if (this.timeLeft <= 0) this.win()
     }})
+
+    // Play background music
+    try {
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 } as any)
+      this.bgMusic.play()
+    } catch (error) {
+      console.log('Background music not available')
+    }
   }
 
   private triggerJump() {
