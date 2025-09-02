@@ -90,14 +90,14 @@ export class PlayScene extends Phaser.Scene {
     }
     preload() {
         // Load only assets that actually exist
-        this.load.image('bg', 'assets/background/stadium.jpg');
-        this.load.image('player', 'assets/travis/travis.jpeg');
-        this.load.image('taylor', 'assets/taylor/taylor.jpeg');
-        this.load.image('donald', 'assets/donald/donald.png');
+        this.load.image('bg', '/assets/background/stadium.jpg');
+        this.load.image('player', '/assets/travis/travis.jpeg');
+        this.load.image('taylor', '/assets/taylor/taylor.jpeg');
+        this.load.image('donald', '/assets/donald/donald.png');
         // auto-load all exes images
         this.catalog = loadAssets(this);
         // Load background music from BGM folder
-        this.load.audio('bgMusic', 'assets/BGM/y2mate.com - Taylor Swift  Paper Rings Official Audio.mp3');
+        this.load.audio('bgMusic', '/assets/BGM/y2mate.com - Taylor Swift  Paper Rings Official Audio.mp3');
         // Audio files don't exist, so we'll skip them
     }
     create() {

@@ -5,7 +5,7 @@ export class MenuScene extends Phaser.Scene {
 
   preload() {
     if (!this.textures.exists('bg')) {
-      this.load.image('bg', 'assets/background/stadium.jpg')
+      this.load.image('bg', '/assets/background/stadium.jpg')
     }
   }
 

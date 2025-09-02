@@ -1,10 +1,10 @@
 // Auto-load images from assets directories using Vite's import.meta.glob
 export function loadAssets(scene) {
-    const exesModules = import.meta.glob('./assets/exes/*.{png,jpg,jpeg,gif}', {
+    const exesModules = import.meta.glob('/assets/exes/*.{png,jpg,jpeg,gif}', {
         eager: true,
         as: 'url'
     });
-    const travisModules = import.meta.glob('./assets/travis/*.{png,jpg,jpeg,gif}', {
+    const travisModules = import.meta.glob('/assets/travis/*.{png,jpg,jpeg,gif}', {
         eager: true,
         as: 'url'
     });

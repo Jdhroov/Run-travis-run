@@ -3,11 +3,11 @@ export class GameOverScene extends Phaser.Scene {
     constructor() { super('GameOverScene'); }
     preload() {
         if (!this.textures.exists('bg')) {
-            this.load.image('bg', 'assets/background/stadium.jpg');
+            this.load.image('bg', '/assets/background/stadium.jpg');
         }
         // Preload Taylor win image
         if (!this.textures.exists('taylor-win')) {
-            this.load.image('taylor-win', 'assets/taylor/taylor.jpeg');
+            this.load.image('taylor-win', '/assets/taylor/taylor.jpeg');
         }
     }
     create(data) {
