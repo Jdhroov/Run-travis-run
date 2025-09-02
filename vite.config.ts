@@ -4,7 +4,7 @@ export default defineConfig({
   server: {
     port: 5173
   },
-  base: '/Run-travis-run/',
+  base: './',
   build: {
     target: 'es2019',
     outDir: 'dist',
