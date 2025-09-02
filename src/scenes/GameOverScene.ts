@@ -11,7 +11,7 @@ export class GameOverScene extends Phaser.Scene {
       this.load.image('taylor-win', '/assets/taylor/taylor.jpeg')
     }
   }
-  create(data: { result: 'win'|'lose', score: number }) {
+  create(data: { result: 'win'|'lose' }) {
     const { width, height } = this.scale
 
     if (this.textures.exists('bg')) {
@@ -31,14 +31,6 @@ export class GameOverScene extends Phaser.Scene {
 
     const centerY = height/2
     this.add.image(width/2, centerY, data.result === 'win' ? 'taylor-win' : 'donald').setScale(0.5)
-
-    this.add.text(width/2, height - 120, `Score: ${data.score}`, { color: '#c2185b' }).setOrigin(0.5)
-
-    const savePrompt = this.add.text(width/2, height - 80, 'Press S to save score to Leaderboard', { color: '#c2185b' }).setOrigin(0.5)
-
-    this.input.keyboard?.on('keydown-S', () => {
-      this.scene.start('LeaderboardScene', { score: data.score })
-    })
 
     this.input.keyboard?.once('keydown-R', () => this.scene.start('PlayScene'))
     this.input.once('pointerdown', () => this.scene.start('PlayScene'))

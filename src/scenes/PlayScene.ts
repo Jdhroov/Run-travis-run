@@ -212,15 +212,10 @@ export class PlayScene extends Phaser.Scene {
   private increaseDifficulty(delta: number) {
     this.speed += delta * 0.02
     this.obstacleTimer += delta
-    if (this.obstacleTimer > Math.max(300, 1200 - this.score)) {
+    if (this.obstacleTimer > Math.max(300, 1200 - this.timeLeft)) {
       this.obstacleTimer = 0
       this.spawnObstacle()
     }
-  }
-
-  private addScore(delta: number) {
-    this.score += Math.floor(delta * 0.05)
-    this.scoreText.setText(`Score: ${this.score}`)
   }
 
   private win() {
@@ -229,7 +224,7 @@ export class PlayScene extends Phaser.Scene {
     // Stop background music
     if (this.bgMusic) this.bgMusic.stop()
     try { this.sound.play('win') } catch {}
-    this.scene.start('GameOverScene', { result: 'win', score: this.score })
+    this.scene.start('GameOverScene', { result: 'win' })
   }
 
   private lose() {
@@ -238,7 +233,7 @@ export class PlayScene extends Phaser.Scene {
     // Stop background music
     if (this.bgMusic) this.bgMusic.stop()
     try { this.sound.play('hit') } catch {}
-    this.scene.start('GameOverScene', { result: 'lose', score: this.score })
+    this.scene.start('GameOverScene', { result: 'lose' })
   }
 
   update(_: number, delta: number) {
@@ -249,7 +244,6 @@ export class PlayScene extends Phaser.Scene {
     if (this.cursors.down?.isUp) this.endDuck()
 
     this.increaseDifficulty(delta)
-    this.addScore(delta)
 
     // parallax scroll
     if (this.bgFar) this.bgFar.tilePositionX += this.speed * 0.0008 * delta
