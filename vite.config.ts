@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  server: { port: 5173 },
-  build: { target: 'es2019' },
-  test: {
-    environment: 'jsdom',
-    setupFiles: './vitest.setup.ts',
-    globals: true
+  server: {
+    port: 5173
+  },
+  base: './',
+  build: {
+    target: 'es2019',
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: 'index.html'
+      }
+    }
   }
 })

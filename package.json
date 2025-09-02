@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest --run",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node copy-assets.js",
     "preview": "vite preview",
-    "test:ui": "vitest",
-    "lint": "eslint ."
+    "test": "vitest --run",
+    "test:ui": "vitest --ui",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "repository": {
     "type": "git",
