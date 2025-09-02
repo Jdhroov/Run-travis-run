@@ -7,8 +7,6 @@ export class PlayScene extends Phaser.Scene {
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private isDucking = false
-  private score = 0
-  private scoreText!: Phaser.GameObjects.Text
   private timerText!: Phaser.GameObjects.Text
   private timeLeft = 60
   private speed = 300
@@ -44,7 +42,6 @@ export class PlayScene extends Phaser.Scene {
 
     // Reset state for clean restarts
     this.isDucking = false
-    this.score = 0
     this.timeLeft = 60
     this.speed = 300
     this.obstacleTimer = 0
@@ -133,7 +130,6 @@ export class PlayScene extends Phaser.Scene {
       }
     })
 
-    this.scoreText = this.add.text(16, 16, 'Score: 0', { color: '#c2185b' })
     this.timerText = this.add.text(width - 120, 16, String(this.timeLeft), { color: '#c2185b' })
 
     this.time.addEvent({ delay: 1000, loop: true, callback: () => {

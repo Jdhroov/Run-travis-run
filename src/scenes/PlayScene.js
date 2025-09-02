@@ -21,18 +21,6 @@ export class PlayScene extends Phaser.Scene {
             writable: true,
             value: false
         });
-        Object.defineProperty(this, "score", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "scoreText", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
         Object.defineProperty(this, "timerText", {
             enumerable: true,
             configurable: true,
@@ -116,7 +104,6 @@ export class PlayScene extends Phaser.Scene {
         const { width, height } = this.scale;
         // Reset state for clean restarts
         this.isDucking = false;
-        this.score = 0;
         this.timeLeft = 60;
         this.speed = 300;
         this.obstacleTimer = 0;
@@ -202,7 +189,6 @@ export class PlayScene extends Phaser.Scene {
                 this.endDuck();
             }
         });
-        this.scoreText = this.add.text(16, 16, 'Score: 0', { color: '#c2185b' });
         this.timerText = this.add.text(width - 120, 16, String(this.timeLeft), { color: '#c2185b' });
         this.time.addEvent({ delay: 1000, loop: true, callback: () => {
                 if (this.result !== 'playing')
