@@ -34,7 +34,7 @@ export class GameOverScene extends Phaser.Scene {
 
     this.add.text(width/2, height - 120, `Score: ${data.score}`, { color: '#c2185b' }).setOrigin(0.5)
 
-    const savePrompt = this.add.text(width/2, height - 80, 'Save your score? (Press S)', { color: '#c2185b' }).setOrigin(0.5)
+    const savePrompt = this.add.text(width/2, height - 80, 'Press S to save score to Leaderboard', { color: '#c2185b' }).setOrigin(0.5)
 
     this.input.keyboard?.on('keydown-S', () => {
       this.scene.start('LeaderboardScene', { score: data.score })
