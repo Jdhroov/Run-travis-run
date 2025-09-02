@@ -34,7 +34,6 @@ export class PlayScene extends Phaser.Scene {
     
     // Load background music from BGM folder
     this.load.audio('bgMusic', '/assets/BGM/y2mate.com - Taylor Swift  Paper Rings Official Audio.mp3')
-    // Audio files don't exist, so we'll skip them
   }
 
   create() {
@@ -46,6 +45,20 @@ export class PlayScene extends Phaser.Scene {
     this.speed = 300
     this.obstacleTimer = 0
     this.result = 'playing'
+
+    // Wait for audio to be fully loaded before playing
+    this.sound.once('unlocked', () => {
+      console.log('Audio unlocked, attempting to play background music...')
+      this.playBackgroundMusic()
+    })
+
+    // If audio is already unlocked, play immediately
+    if (this.sound.locked) {
+      console.log('Audio is locked, waiting for user interaction...')
+    } else {
+      console.log('Audio is unlocked, playing background music immediately...')
+      this.playBackgroundMusic()
+    }
 
     // Generate placeholder textures in tests/dev if not present
     const makeRect = (key: string, w: number, h: number, color = 0xffffff) => {
@@ -70,13 +83,7 @@ export class PlayScene extends Phaser.Scene {
       try { return originalPlay(key) } catch { return null as unknown as Phaser.Sound.BaseSound }
     }) as typeof this.sound.play
 
-    // Play background music
-    try {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 } as any)
-      this.bgMusic.play()
-    } catch (error) {
-      console.log('Background music not available')
-    }
+    // Background music will be played by playBackgroundMusic method
 
     // static background image (stadium)
     if (this.textures.exists('bg')) {
@@ -113,11 +120,25 @@ export class PlayScene extends Phaser.Scene {
     this.physics.add.collider(this.player, ground)
 
     this.cursors = this.input.keyboard!.createCursorKeys()
+    
+    // Handle keyboard input for audio unlocking
+    this.input.keyboard!.on('keydown', (event: KeyboardEvent) => {
+      if (this.sound.locked && !this.bgMusic) {
+        console.log('Keyboard input detected, attempting to unlock audio...')
+        this.playBackgroundMusic()
+      }
+    })
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       this.touchStartY = p.y
       // quick tap jump
       this.triggerJump()
+      
+      // Try to unlock audio on first user interaction
+      if (this.sound.locked && !this.bgMusic) {
+        console.log('User interaction detected, attempting to unlock audio...')
+        this.playBackgroundMusic()
+      }
     })
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       const dy = p.y - this.touchStartY
@@ -245,5 +266,28 @@ export class PlayScene extends Phaser.Scene {
     if (this.bgFar) this.bgFar.tilePositionX += this.speed * 0.0008 * delta
     if (this.bgNear) this.bgNear.tilePositionX += this.speed * 0.0012 * delta
     if (this.groundScroll) this.groundScroll.tilePositionX += this.speed * 0.002 * delta
+  }
+
+  private playBackgroundMusic() {
+    try {
+      console.log('Attempting to play background music...')
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.3 })
+      console.log('Background music added successfully:', this.bgMusic)
+      
+      // Check if audio is loaded
+      if (this.bgMusic.isPlaying) {
+        console.log('Background music is already playing')
+      } else {
+        const playResult = this.bgMusic.play()
+        console.log('Play result:', playResult)
+        if (playResult) {
+          console.log('Background music started successfully')
+        } else {
+          console.log('Failed to start background music')
+        }
+      }
+    } catch (error) {
+      console.error('Error playing background music:', error)
+    }
   }
 }
